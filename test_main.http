@@ -1,0 +1,79 @@
+# Test your FastAPI endpoints
+
+GET http://127.0.0.1:8000/
+Accept: application/json
+
+###
+
+GET http://127.0.0.1:8000/hello/User
+Accept: application/json
+
+###
+
+POST http://127.0.0.1:8000/generate-meal-plan
+Content-Type: application/json
+
+{
+  "week_start_date": "2024-08-05",
+  "week_end_date": "2024-08-11",
+  "available_meals": [
+    {
+      "id": 1,
+      "name": "Spaghetti Carbonara",
+      "effort": "MEDIUM",
+      "description": "Classic Italian pasta dish",
+      "serves": 4,
+      "prep_time_minutes": 30,
+      "tags": ["COMFORT_FOOD"]
+    },
+    {
+      "id": 2,
+      "name": "Chicken Stir Fry",
+      "effort": "LOW",
+      "description": "Quick and healthy chicken stir fry",
+      "serves": 4,
+      "prep_time_minutes": 20,
+      "tags": ["QUICK", "HEALTHY"]
+    },
+    {
+      "id": 3,
+      "name": "Beef Wellington",
+      "effort": "HIGH",
+      "description": "Elegant beef dish wrapped in pastry",
+      "serves": 6,
+      "prep_time_minutes": 120,
+      "tags": ["COMFORT_FOOD"]
+    }
+  ],
+  "recent_meal_plans": [
+    {
+      "id": 1,
+      "date": "2024-07-29",
+      "plan_meals": [
+        {
+          "id": 1,
+          "meal": {
+            "id": 1,
+            "name": "Spaghetti Carbonara",
+            "effort": "MEDIUM"
+          },
+          "required_servings": 4
+        }
+      ]
+    }
+  ],
+  "calendar_events": [
+    {
+      "name": "Team Meeting",
+      "time": "2024-08-06T14:00:00",
+      "all_day": false
+    },
+    {
+      "name": "Weekend Getaway",
+      "time": "2024-08-10T00:00:00",
+      "all_day": true
+    }
+  ]
+}
+
+###
