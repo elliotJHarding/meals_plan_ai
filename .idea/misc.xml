@@ -3,4 +3,5 @@
   <component name="Black">
     <option name="sdkName" value="Python 3.9 (meal_plan_ai)" />
   </component>
+  <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.9 virtualenv at ~/projects/meals/meal_plan_ai/.venv" project-jdk-type="Python SDK" />
 </project>
