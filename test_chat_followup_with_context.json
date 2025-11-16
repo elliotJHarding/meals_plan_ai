@@ -1,0 +1,47 @@
+{
+  "dayOfWeek": 1735689600000,
+  "calendarEvents": [],
+  "availableMeals": [
+    {
+      "name": "Spaghetti Carbonara",
+      "effort": "MEDIUM",
+      "serves": 4,
+      "prepTimeMinutes": 30,
+      "tags": ["QUICK"]
+    },
+    {
+      "name": "Grilled Chicken Salad",
+      "effort": "LOW",
+      "serves": 2,
+      "prepTimeMinutes": 15,
+      "tags": ["HEALTHY", "QUICK"]
+    },
+    {
+      "name": "Vegetable Curry",
+      "effort": "MEDIUM",
+      "serves": 4,
+      "prepTimeMinutes": 45,
+      "tags": ["VEGETARIAN", "SPICY"]
+    }
+  ],
+  "recentMealPlans": [],
+  "conversationHistory": [
+    {
+      "role": "user",
+      "content": "Can you suggest some meals for tonight?"
+    },
+    {
+      "role": "assistant",
+      "content": "Based on your preferences, I suggest: 1. Grilled Chicken Salad (quick and healthy), 2. Vegetable Curry (vegetarian option), 3. Beef Stir Fry"
+    },
+    {
+      "role": "user",
+      "content": "I don't like spicy food, and my kids really love pasta. Can you adjust?"
+    }
+  ],
+  "chatContext": {
+    "dietary_restrictions": ["no shellfish", "lactose intolerant"],
+    "household_size": 2,
+    "preferred_cuisines": ["Italian", "Asian"]
+  }
+}

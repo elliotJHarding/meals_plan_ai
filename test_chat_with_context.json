@@ -1,0 +1,51 @@
+{
+  "dayOfWeek": 1735689600000,
+  "calendarEvents": [],
+  "availableMeals": [
+    {
+      "name": "Spaghetti Carbonara",
+      "effort": "MEDIUM",
+      "serves": 4,
+      "prepTimeMinutes": 30,
+      "tags": ["QUICK"]
+    },
+    {
+      "name": "Grilled Chicken Salad",
+      "effort": "LOW",
+      "serves": 2,
+      "prepTimeMinutes": 15,
+      "tags": ["HEALTHY", "QUICK"]
+    },
+    {
+      "name": "Vegetable Curry",
+      "effort": "MEDIUM",
+      "serves": 4,
+      "prepTimeMinutes": 45,
+      "tags": ["VEGETARIAN", "SPICY"]
+    },
+    {
+      "name": "Beef Stir Fry",
+      "effort": "LOW",
+      "serves": 3,
+      "prepTimeMinutes": 20,
+      "tags": ["QUICK"]
+    },
+    {
+      "name": "Mushroom Risotto",
+      "effort": "HIGH",
+      "serves": 4,
+      "prepTimeMinutes": 60,
+      "tags": ["VEGETARIAN"]
+    }
+  ],
+  "recentMealPlans": [],
+  "conversationHistory": [],
+  "chatContext": {
+    "dietary_restrictions": ["no shellfish", "lactose intolerant"],
+    "household_size": 2,
+    "preferred_cuisines": ["Italian", "Asian"],
+    "dislikes": ["mushrooms", "olives"],
+    "cooking_skill": "intermediate",
+    "weekday_preference": "quick meals on weekdays"
+  }
+}

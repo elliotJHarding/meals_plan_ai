@@ -4,8 +4,22 @@ import logging
 import time
 import json
 
-from models import AiMealPlanGenerationRequest, AiMealPlanGenerationResponse
-from meal_plan_service import MealPlanService
+from models import (
+    AiMealPlanGenerationRequest,
+    AiMealPlanGenerationResponse,
+    ParseRecipeRequest,
+    ParseRecipeResponse,
+    ParseIngredientRequest,
+    ParseIngredientResponse,
+    IngredientMetadataRequest,
+    IngredientMetadataResponse,
+    DayMealPlanChatRequest,
+    DayMealPlanChatResponse
+)
+from meal_plan_chat_service import MealPlanChatService
+from recipe_service import RecipeService
+from ingredient_service import IngredientService
+from auth_utils import extract_bearer_token
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -20,7 +34,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-meal_plan_service = MealPlanService()
+meal_plan_chat_service = MealPlanChatService()
+recipe_service = RecipeService()
+ingredient_service = IngredientService()
 
 
 @app.middleware("http")
@@ -68,80 +84,140 @@ async def root():
     return {"message": "Meal Plan AI API", "status": "running"}
 
 
-@app.get("/hello/{name}")
-async def say_hello(name: str):
-    return {"message": f"Hello {name}"}
-
-
-@app.post("/generate-meal-plan", response_model=AiMealPlanGenerationResponse)
-async def generate_meal_plan(request: AiMealPlanGenerationRequest):
+@app.post("/parse-recipe", response_model=ParseRecipeResponse)
+async def parse_recipe(request: ParseRecipeRequest):
+    """
+    Parse a recipe from a URL.
+    Extracts title, description, time, effort, and ingredients.
+    """
     try:
-        # Log detailed request information
-        logger.info("=== MEAL PLAN GENERATION REQUEST ===")
-        logger.info(f"Week period: {request.week_start_date} to {request.week_end_date}")
-        logger.info(f"Available meals count: {len(request.available_meals)}")
-        logger.info(f"Recent meal plans count: {len(request.recent_meal_plans)}")
-        logger.info(f"Existing plans for week count: {len(request.existing_plans_for_week)}")
-        logger.info(f"Calendar events count: {len(request.calendar_events)}")
-        logger.info(f"Custom prompt: {request.prompt if request.prompt else 'None'}")
-        
-        # Log available meals details
-        if request.available_meals:
-            logger.info("Available meals:")
-            for i, meal in enumerate(request.available_meals):
-                effort = meal.effort.value if meal.effort else 'Unknown'
-                tags = [tag.value if hasattr(tag, 'value') else str(tag) for tag in meal.tags] if meal.tags else []
-                logger.info(f"  {i+1}. {meal.name} (Effort: {effort}, Serves: {meal.serves}, Prep: {meal.prep_time_minutes}min, Tags: {tags})")
-        
-        # Log calendar events
-        if request.calendar_events:
-            logger.info("Calendar events:")
-            for i, event in enumerate(request.calendar_events):
-                logger.info(f"  {i+1}. {event.name} at {event.time} ({'All day' if event.all_day else 'Timed'})")
-        
-        # Log recent meal plans
-        if request.recent_meal_plans:
-            logger.info("Recent meal plans:")
-            for i, plan in enumerate(request.recent_meal_plans):
-                meal_names = [pm.meal.name for pm in plan.plan_meals]
-                logger.info(f"  {i+1}. {plan.date}: {', '.join(meal_names)}")
-        
-        # Log existing plans for the week
-        if request.existing_plans_for_week:
-            logger.info("Existing plans for week:")
-            for i, plan in enumerate(request.existing_plans_for_week):
-                meal_names = [pm.meal.name for pm in plan.plan_meals]
-                logger.info(f"  {i+1}. {plan.date}: {', '.join(meal_names)}")
-        
-        # Generate meal plan
-        logger.info("Calling meal plan service...")
-        response = meal_plan_service.generate_meal_plan(request)
-        
-        # Log response details
-        logger.info("=== MEAL PLAN GENERATION RESPONSE ===")
-        logger.info(f"Generated plans count: {len(response.generated_plans)}")
-        logger.info("Generated meal plan:")
-        for i, plan in enumerate(response.generated_plans):
-            meal_names = [pm.meal.name for pm in plan.plan_meals]
-            servings = [pm.required_servings for pm in plan.plan_meals]
-            logger.info(f"  {plan.date}: {', '.join([f'{name} ({srv} servings)' for name, srv in zip(meal_names, servings)])}")
-        
-        logger.info(f"Reasoning: {response.reasoning}")
+        logger.info(f"=== RECIPE PARSING REQUEST ===")
+        logger.info(f"URL: {request.url}")
+
+        response = recipe_service.parse_recipe(request)
+
+        logger.info(f"=== RECIPE PARSING RESPONSE ===")
+        logger.info(f"Title: {response.title}")
+        logger.info(f"Ingredients found: {len(response.ingredients)}")
+        logger.info(f"Total time: {response.total_time_minutes} minutes")
+        logger.info(f"Effort: {response.effort}")
         logger.info("=== REQUEST COMPLETED SUCCESSFULLY ===")
-        
+
         return response
-        
     except Exception as e:
-        logger.error("=== MEAL PLAN GENERATION ERROR ===")
-        logger.error(f"Error type: {type(e).__name__}")
-        logger.error(f"Error message: {str(e)}")
-        logger.error("Request details for debugging:")
-        logger.error(f"  Week: {getattr(request, 'week_start_date', 'N/A')} to {getattr(request, 'week_end_date', 'N/A')}")
-        logger.error(f"  Meals count: {len(getattr(request, 'available_meals', []))}")
-        
-        # Log the full stack trace for debugging
+        logger.error(f"=== RECIPE PARSING ERROR ===")
+        logger.error(f"Error: {str(e)}")
         import traceback
         logger.error(f"Stack trace:\n{traceback.format_exc()}")
         logger.error("=== ERROR HANDLING COMPLETED ===")
-        
-        raise HTTPException(status_code=500, detail=f"Failed to generate meal plan: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to parse recipe: {str(e)}")
+
+
+@app.post("/parse-ingredient", response_model=ParseIngredientResponse)
+async def parse_ingredient(request: ParseIngredientRequest):
+    """
+    Parse an ingredient string into structured components.
+    Handles complex quantities like fractions and ranges.
+    """
+    try:
+        logger.info(f"=== INGREDIENT PARSING REQUEST ===")
+        logger.info(f"Ingredient string: {request.ingredient_string}")
+
+        response = ingredient_service.parse_ingredient(request)
+
+        logger.info(f"=== INGREDIENT PARSING RESPONSE ===")
+        logger.info(f"Name: {response.name}")
+        logger.info(f"Amount: {response.amount}")
+        logger.info(f"Unit: {response.unit}")
+        logger.info(f"Well-formed: {response.is_well_formed}")
+        logger.info("=== REQUEST COMPLETED SUCCESSFULLY ===")
+
+        return response
+    except Exception as e:
+        logger.error(f"=== INGREDIENT PARSING ERROR ===")
+        logger.error(f"Error: {str(e)}")
+        import traceback
+        logger.error(f"Stack trace:\n{traceback.format_exc()}")
+        logger.error("=== ERROR HANDLING COMPLETED ===")
+        raise HTTPException(status_code=500, detail=f"Failed to parse ingredient: {str(e)}")
+
+
+@app.post("/ingredient-metadata", response_model=IngredientMetadataResponse)
+async def get_ingredient_metadata(request_body: IngredientMetadataRequest, request: Request):
+    """
+    Get metadata for an ingredient.
+    Uses AI to classify ingredients as CUPBOARD or FRESH.
+    Requires OAuth authentication via Authorization header.
+    """
+    try:
+        logger.info(f"=== INGREDIENT METADATA REQUEST ===")
+        logger.info(f"Ingredient: {request_body.ingredient_name}")
+
+        # Extract OAuth token from Authorization header
+        access_token = extract_bearer_token(request)
+
+        # Call service with OAuth token
+        response = ingredient_service.get_ingredient_metadata(request_body, access_token)
+
+        logger.info(f"=== INGREDIENT METADATA RESPONSE ===")
+        logger.info(f"Storage type: {response.storage_type}")
+        logger.info(f"Description: {response.description}")
+        logger.info("=== REQUEST COMPLETED SUCCESSFULLY ===")
+
+        return response
+    except HTTPException:
+        # Re-raise auth errors (401)
+        raise
+    except Exception as e:
+        logger.error(f"=== INGREDIENT METADATA ERROR ===")
+        logger.error(f"Error: {str(e)}")
+        import traceback
+        logger.error(f"Stack trace:\n{traceback.format_exc()}")
+        logger.error("=== ERROR HANDLING COMPLETED ===")
+        raise HTTPException(status_code=500, detail=f"Failed to get ingredient metadata: {str(e)}")
+
+
+@app.post("/chat-meal-plan-day", response_model=DayMealPlanChatResponse)
+async def chat_meal_plan_day(request_body: DayMealPlanChatRequest, request: Request):
+    """
+    Chat-based meal planning for a specific day.
+    Supports iterative conversation - suggest meals, get feedback, adjust suggestions.
+    Requires OAuth authentication via Authorization header.
+    """
+    try:
+        logger.info(f"=== MEAL PLAN CHAT REQUEST ===")
+        logger.info(f"Day: {request_body.day_of_week}")
+        logger.info(f"Calendar events: {len(request_body.calendar_events)}")
+        logger.info(f"Available meals: {len(request_body.available_meals)}")
+        logger.info(f"Conversation history: {len(request_body.conversation_history)} messages")
+
+        # Log conversation history
+        if request_body.conversation_history:
+            logger.info("Previous conversation:")
+            for i, msg in enumerate(request_body.conversation_history):
+                logger.info(f"  {i+1}. {msg.role}: {msg.content[:100]}...")
+
+        # Extract OAuth token from Authorization header
+        access_token = extract_bearer_token(request)
+
+        # Call service with OAuth token
+        response = meal_plan_chat_service.suggest_meals_for_day(request_body, access_token)
+
+        logger.info(f"=== MEAL PLAN CHAT RESPONSE ===")
+        logger.info(f"Suggestions: {len(response.suggestions)}")
+        for suggestion in response.suggestions:
+            logger.info(f"  Rank {suggestion.rank}: {suggestion.meal_name}")
+        logger.info(f"Reasoning: {response.reasoning[:200]}...")
+        logger.info("=== REQUEST COMPLETED SUCCESSFULLY ===")
+
+        return response
+    except HTTPException:
+        # Re-raise auth errors (401)
+        raise
+    except Exception as e:
+        logger.error(f"=== MEAL PLAN CHAT ERROR ===")
+        logger.error(f"Error: {str(e)}")
+        import traceback
+        logger.error(f"Stack trace:\n{traceback.format_exc()}")
+        logger.error("=== ERROR HANDLING COMPLETED ===")
+        raise HTTPException(status_code=500, detail=f"Failed to generate meal suggestions: {str(e)}")

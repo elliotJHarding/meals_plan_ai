@@ -1,0 +1,55 @@
+{
+  "dayOfWeek": 1729641600000,
+  "calendarEvents": [
+    {
+      "name": "Team Meeting",
+      "time": [2024, 10, 22, 14, 0],
+      "allDay": false
+    },
+    {
+      "name": "Gym",
+      "time": [2024, 10, 22, 18, 30],
+      "allDay": false
+    }
+  ],
+  "currentWeekPlan": [],
+  "recentMealPlans": [],
+  "availableMeals": [
+    {
+      "name": "Spaghetti Carbonara",
+      "effort": "MEDIUM",
+      "serves": 4,
+      "prepTimeMinutes": 30,
+      "tags": ["QUICK"]
+    },
+    {
+      "name": "Grilled Chicken Salad",
+      "effort": "LOW",
+      "serves": 2,
+      "prepTimeMinutes": 15,
+      "tags": ["HEALTHY", "QUICK"]
+    },
+    {
+      "name": "Beef Stew",
+      "effort": "HIGH",
+      "serves": 6,
+      "prepTimeMinutes": 120,
+      "tags": ["COMFORT_FOOD"]
+    },
+    {
+      "name": "Vegetable Stir-fry",
+      "effort": "LOW",
+      "serves": 3,
+      "prepTimeMinutes": 20,
+      "tags": ["VEGETARIAN", "HEALTHY", "QUICK"]
+    },
+    {
+      "name": "Homemade Pizza",
+      "effort": "MEDIUM",
+      "serves": 4,
+      "prepTimeMinutes": 45,
+      "tags": ["FAMILY_FRIENDLY"]
+    }
+  ],
+  "conversationHistory": []
+}

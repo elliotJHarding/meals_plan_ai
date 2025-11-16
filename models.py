@@ -174,6 +174,106 @@ class AiMealPlanGenerationRequest(BaseModel):
 
 class AiMealPlanGenerationResponse(BaseModel):
     model_config = {"populate_by_name": True}
-    
+
     generated_plans: List[PlanDto] = Field(alias="generatedPlans")
     reasoning: str
+
+
+# Recipe and Ingredient Parsing Models
+
+class IngredientStorageType(str, Enum):
+    CUPBOARD = "CUPBOARD"
+    FRESH = "FRESH"
+
+
+class ParseRecipeRequest(BaseModel):
+    url: str = Field(..., description="URL of the recipe webpage to parse")
+
+
+class ParsedIngredient(BaseModel):
+    """Structured ingredient with parsed components"""
+    name: str
+    amount: Optional[str] = None
+    unit: Optional[str] = None
+    is_well_formed: bool = True
+    raw_text: Optional[str] = None
+
+
+class ParseRecipeResponse(BaseModel):
+    title: Optional[str] = None
+    description: Optional[str] = None
+    total_time_minutes: Optional[int] = None
+    effort: Optional[Effort] = None
+    ingredients: List[ParsedIngredient] = []
+    url: str
+
+
+class ParseIngredientRequest(BaseModel):
+    ingredient_string: str = Field(..., description="Raw ingredient string to parse (e.g., '2 1/2 cups all-purpose flour')")
+
+
+class ParseIngredientResponse(BaseModel):
+    name: str
+    amount: Optional[str] = None
+    unit: Optional[str] = None
+    is_well_formed: bool
+    raw_text: str
+
+
+class IngredientMetadataRequest(BaseModel):
+    ingredient_name: str = Field(..., description="Name of the ingredient to get metadata for")
+
+
+class IngredientMetadataResponse(BaseModel):
+    ingredient_name: str
+    storage_type: IngredientStorageType
+    description: Optional[str] = None
+
+
+# Meal Plan Chat Models (Day-by-Day Planning)
+
+class ChatMessage(BaseModel):
+    """Represents a single message in the conversation"""
+    role: str = Field(..., description="Role of the message sender: 'user' or 'assistant'")
+    content: str = Field(..., description="The message content")
+
+
+class SuggestedMeal(BaseModel):
+    """Represents a meal suggestion with ranking information"""
+    model_config = {"populate_by_name": True}
+
+    meal_name: str = Field(alias="mealName")
+    meal_id: int = Field(alias="mealId")
+    rank: int = Field(..., description="Position in suggestions (1-5)", ge=1, le=5)
+    suitability_score: Optional[float] = Field(None, alias="suitabilityScore", description="Confidence score 0-1", ge=0, le=1)
+
+
+class DayMealPlanChatRequest(BaseModel):
+    """Request for chatbot to suggest meals for a specific day"""
+    model_config = {"populate_by_name": True}
+
+    day_of_week: Union[date, int] = Field(alias="dayOfWeek", description="The specific day being planned")
+    calendar_events: List[CalendarEventDto] = Field(alias="calendarEvents", description="Calendar events for this day")
+    current_week_plan: Optional[List[PlanDto]] = Field(None, alias="currentWeekPlan", description="The full week's meal plan")
+    recent_meal_plans: List[PlanDto] = Field(default_factory=list, alias="recentMealPlans", description="1-2 months of historical plans")
+    available_meals: List[MealDto] = Field(alias="availableMeals", description="List of meals to choose from")
+    conversation_history: List[ChatMessage] = Field(default_factory=list, alias="conversationHistory", description="Previous messages in conversation")
+    chat_context: Optional[dict] = Field(None, alias="chatContext", description="Persistent context about user preferences and important information for meal planning")
+
+    @field_validator('day_of_week', mode='before')
+    @classmethod
+    def parse_date(cls, v):
+        if isinstance(v, int):
+            # Convert Unix timestamp (milliseconds) to date
+            return date.fromtimestamp(v / 1000)
+        return v
+
+
+class DayMealPlanChatResponse(BaseModel):
+    """Response from chatbot with meal suggestions"""
+    model_config = {"populate_by_name": True}
+
+    suggestions: List[SuggestedMeal]
+    reasoning: str = Field(..., description="Explanation for the suggestions")
+    conversation_complete: bool = Field(default=False, alias="conversationComplete", description="Whether more feedback is needed")
+    updated_chat_context: Optional[dict] = Field(None, alias="updatedChatContext", description="Modified context if the LLM identified important information to remember for future meal planning")
