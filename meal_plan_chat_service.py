@@ -8,15 +8,15 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import PydanticOutputParser
 
-from models import (
-    DayMealPlanChatRequest,
-    DayMealPlanChatResponse,
-    SuggestedMeal,
-    MealDto,
-    CalendarEventDto,
-    PlanDto,
-    ChatMessage
-)
+from meals_contract.models.day_meal_plan_chat_request import DayMealPlanChatRequest
+from meals_contract.models.day_meal_plan_chat_response import DayMealPlanChatResponse
+from meals_contract.models.suggested_meal import SuggestedMeal
+from meals_contract.models.meal_dto import MealDto
+from meals_contract.models.calendar_event_dto import CalendarEventDto
+from meals_contract.models.plan_dto import PlanDto
+from meals_contract.models.chat_message import ChatMessage
+
+from meals_contract.models import *
 from auth_utils import create_llm_with_token
 
 load_dotenv()
@@ -290,12 +290,12 @@ Remember to suggest 3-5 meals, ranked by suitability, with reasoning that addres
 
         lines = []
         for plan in current_week_plan:
-            if plan.date == current_day:
+            if plan.var_date == current_day:
                 continue  # Skip the day we're planning
 
-            meal_names = [pm.meal.name for pm in plan.plan_meals]
+            meal_names = [pm.meal.name for pm in (plan.plan_meals or [])]
             if meal_names:
-                lines.append(f"- {plan.date.strftime('%A, %b %d')}: {', '.join(meal_names)}")
+                lines.append(f"- {plan.var_date.strftime('%A, %b %d')}: {', '.join(meal_names)}")
 
         return "\n".join(lines) if lines else "No other meals planned for this week"
 
@@ -307,7 +307,7 @@ Remember to suggest 3-5 meals, ranked by suitability, with reasoning that addres
         # Get unique meals from recent plans
         recent_meals = set()
         for plan in recent_meal_plans[-20:]:  # Last 20 days
-            for plan_meal in plan.plan_meals:
+            for plan_meal in (plan.plan_meals or []):
                 recent_meals.add(plan_meal.meal.name)
 
         if not recent_meals:

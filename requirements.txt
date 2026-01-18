@@ -6,3 +6,4 @@ pydantic==2.11.7
 beautifulsoup4==4.12.3
 requests==2.32.3
 lxml==5.3.0
+meals-contract @ https://github.com/elliotJHarding/meals_model/releases/download/v1.0.1/meals_contract-1.0.1-py3-none-any.whl

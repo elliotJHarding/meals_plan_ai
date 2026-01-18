@@ -8,13 +8,12 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import PydanticOutputParser
 
-from models import (
-    ParseIngredientRequest,
-    ParseIngredientResponse,
-    IngredientMetadataRequest,
-    IngredientMetadataResponse,
-    IngredientStorageType
-)
+from meals_contract.models.parse_ingredient_request import ParseIngredientRequest
+from meals_contract.models.parse_ingredient_response import ParseIngredientResponse
+from meals_contract.models.ingredient_metadata_request import IngredientMetadataRequest
+from meals_contract.models.ingredient_metadata_response import IngredientMetadataResponse
+from meals_contract.models.ingredient_storage_type import IngredientStorageType
+
 from auth_utils import create_llm_with_token
 
 load_dotenv()

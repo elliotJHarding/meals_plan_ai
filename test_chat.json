@@ -1,14 +1,14 @@
 {
-  "dayOfWeek": 1729641600000,
+  "dayOfWeek": "2024-10-22",
   "calendarEvents": [
     {
       "name": "Team Meeting",
-      "time": [2024, 10, 22, 14, 0],
+      "time": "2024-10-22T14:00:00Z",
       "allDay": false
     },
     {
       "name": "Gym",
-      "time": [2024, 10, 22, 18, 30],
+      "time": "2024-10-22T18:30:00Z",
       "allDay": false
     }
   ],
@@ -16,40 +16,50 @@
   "recentMealPlans": [],
   "availableMeals": [
     {
+      "id": 1,
       "name": "Spaghetti Carbonara",
       "effort": "MEDIUM",
       "serves": 4,
       "prepTimeMinutes": 30,
-      "tags": ["QUICK"]
+      "tags": [{"id": 1, "name": "QUICK"}]
     },
     {
+      "id": 2,
       "name": "Grilled Chicken Salad",
       "effort": "LOW",
       "serves": 2,
       "prepTimeMinutes": 15,
-      "tags": ["HEALTHY", "QUICK"]
+      "tags": [{"id": 2, "name": "HEALTHY"}, {"id": 1, "name": "QUICK"}]
     },
     {
+      "id": 3,
       "name": "Beef Stew",
       "effort": "HIGH",
       "serves": 6,
       "prepTimeMinutes": 120,
-      "tags": ["COMFORT_FOOD"]
+      "tags": [{"id": 3, "name": "COMFORT_FOOD"}]
     },
     {
+      "id": 4,
       "name": "Vegetable Stir-fry",
       "effort": "LOW",
       "serves": 3,
       "prepTimeMinutes": 20,
-      "tags": ["VEGETARIAN", "HEALTHY", "QUICK"]
+      "tags": [{"id": 4, "name": "VEGETARIAN"}, {"id": 2, "name": "HEALTHY"}, {"id": 1, "name": "QUICK"}]
     },
     {
+      "id": 5,
       "name": "Homemade Pizza",
       "effort": "MEDIUM",
       "serves": 4,
       "prepTimeMinutes": 45,
-      "tags": ["FAMILY_FRIENDLY"]
+      "tags": [{"id": 5, "name": "FAMILY_FRIENDLY"}]
     }
   ],
-  "conversationHistory": []
+  "conversationHistory": [
+    {
+      "role": "user",
+      "content": "Please suggest some meals for this day."
+    }
+  ]
 }

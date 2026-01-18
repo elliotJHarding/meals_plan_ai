@@ -1,21 +1,12 @@
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.exceptions import RequestValidationError
 import logging
 import time
 import json
 
-from models import (
-    AiMealPlanGenerationRequest,
-    AiMealPlanGenerationResponse,
-    ParseRecipeRequest,
-    ParseRecipeResponse,
-    ParseIngredientRequest,
-    ParseIngredientResponse,
-    IngredientMetadataRequest,
-    IngredientMetadataResponse,
-    DayMealPlanChatRequest,
-    DayMealPlanChatResponse
-)
+from meals_contract.models import *
+
 from meal_plan_chat_service import MealPlanChatService
 from recipe_service import RecipeService
 from ingredient_service import IngredientService

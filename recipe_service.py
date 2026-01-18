@@ -4,13 +4,12 @@ from typing import Optional, List
 import requests
 from bs4 import BeautifulSoup
 
-from models import (
-    ParseRecipeRequest,
-    ParseRecipeResponse,
-    ParsedIngredient,
-    ParseIngredientRequest,
-    Effort
-)
+from meals_contract.models.parse_recipe_request import ParseRecipeRequest
+from meals_contract.models.parse_recipe_response import ParseRecipeResponse
+from meals_contract.models.parsed_ingredient import ParsedIngredient
+from meals_contract.models.parse_ingredient_request import ParseIngredientRequest
+from meals_contract.models.effort import Effort
+
 from ingredient_service import IngredientService
 
 logger = logging.getLogger(__name__)

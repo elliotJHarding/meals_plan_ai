@@ -1,27 +1,30 @@
 {
-  "dayOfWeek": 1735689600000,
+  "dayOfWeek": "2025-01-01",
   "calendarEvents": [],
   "availableMeals": [
     {
+      "id": 1,
       "name": "Spaghetti Carbonara",
       "effort": "MEDIUM",
       "serves": 4,
       "prepTimeMinutes": 30,
-      "tags": ["QUICK"]
+      "tags": [{"id": 1, "name": "QUICK"}]
     },
     {
+      "id": 2,
       "name": "Grilled Chicken Salad",
       "effort": "LOW",
       "serves": 2,
       "prepTimeMinutes": 15,
-      "tags": ["HEALTHY", "QUICK"]
+      "tags": [{"id": 2, "name": "HEALTHY"}, {"id": 1, "name": "QUICK"}]
     },
     {
+      "id": 3,
       "name": "Vegetable Curry",
       "effort": "MEDIUM",
       "serves": 4,
       "prepTimeMinutes": 45,
-      "tags": ["VEGETARIAN", "SPICY"]
+      "tags": [{"id": 4, "name": "VEGETARIAN"}, {"id": 6, "name": "SPICY"}]
     }
   ],
   "recentMealPlans": [],
