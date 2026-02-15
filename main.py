@@ -10,6 +10,7 @@ from meals_contract.models import *
 from meal_plan_chat_service import MealPlanChatService
 from recipe_service import RecipeService
 from ingredient_service import IngredientService
+from ingredient_suggestion_service import IngredientSuggestionService
 from auth_utils import extract_bearer_token
 
 logging.basicConfig(level=logging.INFO)
@@ -28,6 +29,7 @@ app.add_middleware(
 meal_plan_chat_service = MealPlanChatService()
 recipe_service = RecipeService()
 ingredient_service = IngredientService()
+ingredient_suggestion_service = IngredientSuggestionService()
 
 
 @app.middleware("http")
@@ -212,3 +214,32 @@ async def chat_meal_plan_day(request_body: DayMealPlanChatRequest, request: Requ
         logger.error(f"Stack trace:\n{traceback.format_exc()}")
         logger.error("=== ERROR HANDLING COMPLETED ===")
         raise HTTPException(status_code=500, detail=f"Failed to generate meal suggestions: {str(e)}")
+
+
+@app.post("/suggest-ingredients", response_model=SuggestIngredientsResponse)
+async def suggest_ingredients(request_body: SuggestIngredientsRequest, request: Request):
+    """
+    Suggest ingredients for a meal using AI.
+    Requires OAuth authentication via Authorization header.
+    """
+    try:
+        logger.info(f"=== INGREDIENT SUGGESTION REQUEST ===")
+        logger.info(f"Meal: {request_body.meal_name}")
+
+        access_token = extract_bearer_token(request)
+        response = ingredient_suggestion_service.suggest_ingredients(request_body, access_token)
+
+        logger.info(f"=== INGREDIENT SUGGESTION RESPONSE ===")
+        logger.info(f"Suggested {len(response.ingredients)} ingredients")
+        logger.info("=== REQUEST COMPLETED SUCCESSFULLY ===")
+
+        return response
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"=== INGREDIENT SUGGESTION ERROR ===")
+        logger.error(f"Error: {str(e)}")
+        import traceback
+        logger.error(f"Stack trace:\n{traceback.format_exc()}")
+        logger.error("=== ERROR HANDLING COMPLETED ===")
+        raise HTTPException(status_code=500, detail=f"Failed to suggest ingredients: {str(e)}")
