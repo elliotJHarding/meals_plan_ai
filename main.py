@@ -2,6 +2,7 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.exceptions import RequestValidationError
 import logging
+import os
 import time
 import json
 
@@ -11,7 +12,14 @@ from meal_plan_chat_service import MealPlanChatService
 from recipe_service import RecipeService
 from ingredient_service import IngredientService
 from ingredient_suggestion_service import IngredientSuggestionService
-from auth_utils import extract_bearer_token
+from receipt_ingestion_service import (
+    ReceiptIngestionService,
+    ParseReceiptEmailRequest as ReceiptParseRequest,
+    ParseReceiptEmailResponse as ReceiptParseResponse,
+    LinkWeekRequest as WeekLinkRequest,
+    LinkWeekResponse as WeekLinkResponse,
+)
+from auth_utils import extract_bearer_token, get_optional_token
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -30,6 +38,7 @@ meal_plan_chat_service = MealPlanChatService()
 recipe_service = RecipeService()
 ingredient_service = IngredientService()
 ingredient_suggestion_service = IngredientSuggestionService()
+receipt_ingestion_service = ReceiptIngestionService()
 
 
 @app.middleware("http")
@@ -243,3 +252,39 @@ async def suggest_ingredients(request_body: SuggestIngredientsRequest, request: 
         logger.error(f"Stack trace:\n{traceback.format_exc()}")
         logger.error("=== ERROR HANDLING COMPLETED ===")
         raise HTTPException(status_code=500, detail=f"Failed to suggest ingredients: {str(e)}")
+
+
+@app.post("/parse-receipt-email", response_model=ReceiptParseResponse)
+async def parse_receipt_email(request_body: ReceiptParseRequest, request: Request):
+    """
+    Parse grocery receipt email text into structured grocery items.
+    Auth: user OAuth bearer token, or server GOOGLE_API_KEY override (dev).
+    """
+    try:
+        access_token = get_optional_token(request) if os.environ.get("GOOGLE_API_KEY") else extract_bearer_token(request)
+        return receipt_ingestion_service.parse_receipt(request_body, access_token)
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"=== RECEIPT PARSE ERROR ===\n{str(e)}")
+        import traceback
+        logger.error(f"Stack trace:\n{traceback.format_exc()}")
+        raise HTTPException(status_code=500, detail=f"Failed to parse receipt: {str(e)}")
+
+
+@app.post("/link-week", response_model=WeekLinkResponse)
+async def link_week(request_body: WeekLinkRequest, request: Request):
+    """
+    Link grocery items to the week's planned meals and propose ingredients.
+    Auth: user OAuth bearer token, or server GOOGLE_API_KEY override (dev).
+    """
+    try:
+        access_token = get_optional_token(request) if os.environ.get("GOOGLE_API_KEY") else extract_bearer_token(request)
+        return receipt_ingestion_service.link_week(request_body, access_token)
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"=== WEEK LINK ERROR ===\n{str(e)}")
+        import traceback
+        logger.error(f"Stack trace:\n{traceback.format_exc()}")
+        raise HTTPException(status_code=500, detail=f"Failed to link week: {str(e)}")
